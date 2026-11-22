@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Little Library</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <main class="app">
+    <h1>My Little Library</h1>
+    <p>Add a new book to your reading list. The list is managed by a Python backend.</p>
+
+    <form id="book-form">
+      <label for="book-title">Book title</label>
+      <div class="form-row">
+        <input id="book-title" name="title" type="text" placeholder="e.g. Dune" required>
+        <button type="submit">Add Book</button>
+      </div>
+    </form>
+
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <ul id="book-list"></ul>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
