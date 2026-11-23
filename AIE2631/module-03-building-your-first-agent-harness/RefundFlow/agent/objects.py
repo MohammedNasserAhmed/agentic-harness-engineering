@@ -1,11 +1,19 @@
 from pydantic import BaseModel, Field
 
 
-class Answer(BaseModel):
-    answer:str = Field(description="the answer that is needed for the user question")
-    conversation:bool = Field(description="This is an indicator to know if the conversation" \
-    "should still continue or no. if the agent has made the decision about the refund this should be False" \
-    "if the conversation still need more talk then it's True", default=True)
+class RefundResponse(BaseModel):
+    answer: str = Field(
+        description="The response provided to the user regarding their inquiry."
+    )
+    conversation: bool = Field(
+        description="Indicates whether the conversation should continue. " \
+                    "Set to False when the agent has reached a final refund decision; " \
+                    "otherwise, set to True if further discussion or information is required.",
+        default=True
+    )
 
-class PurchaseItem(BaseModel):
-    name: str = Field(description="name of the item puchased")
+
+class PurchasedItem(BaseModel):
+    name: str = Field(
+        description="The name of the item purchased by the customer."
+    )
