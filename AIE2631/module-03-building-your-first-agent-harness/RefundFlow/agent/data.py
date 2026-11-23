@@ -1,105 +1,105 @@
 
 users_data = {
-    "user123": {
-        "book": {
-            "price": 23,
-            "date": "2026-10-5"
+    "customer207": {
+        "wireless_mouse": {
+            "price": 24,
+            "date": "2026-11-12"
         },
-        "pen": {
-            "price": 7,
-            "date": "2026-10-3"
+        "keyboard": {
+            "price": 38,
+            "date": "2026-10-08"
         }
     },
-    "user124": {
-        "notebook": {
-            "price": 12,
-            "date": "2026-10-6"
+    "customer201": {
+        "travel_mug": {
+            "price": 15,
+            "date": "2026-11-05"
+        },
+        "laptop_stand": {
+            "price": 32,
+            "date": "2026-11-18"
+        },
+        "usb_hub": {
+            "price": 21,
+            "date": "2026-08-14"
         }
     },
-    "user125": {
-        "pencil": {
-            "price": 3,
-            "date": "2026-10-14"
-        },
-        "ruler": {
-            "price": 5,
-            "date": "2026-9-24"
+    "customer209": {
+        "office_chair": {
+            "price": 95,
+            "date": "2026-09-22"
         }
     },
-    "user126": {
-        "backpack": {
-            "price": 45,
-            "date": "2026-10-2"
+    "customer203": {
+        "wireless_earbuds": {
+            "price": 49,
+            "date": "2026-11-09"
         },
-        "water_bottle": {
-            "price": 18,
-            "date": "2026-7-25"
-        },
-        "lunch_box": {
-            "price": 14,
-            "date": "2026-10-10"
+        "phone_case": {
+            "price": 13,
+            "date": "2026-11-15"
         }
     },
-    "user127": {
-        "eraser": {
-            "price": 2,
-            "date": "2026-10-10"
-        }
-    },
-    "user128": {
-        "stapler": {
-            "price": 11,
-            "date": "2026-10-10"
+    "customer210": {
+        "power_bank": {
+            "price": 36,
+            "date": "2026-10-02"
         },
-        "highlighter": {
-            "price": 4,
-            "date": "2026-10-10"
-        }
-    },
-    "user129": {
-        "calculator": {
-            "price": 29,
-            "date": "2026-9-24"
-        },
-        "folder": {
-            "price": 6,
-            "date": "2026-10-25"
-        },
-        "usb_drive": {
-            "price": 16,
-            "date": "2026-7-27"
-        }
-    },
-    "user130": {
-        "headphones": {
-            "price": 35,
-            "date": "2026-10-10"
-        }
-    },
-    "user131": {
-        "desk_lamp": {
-            "price": 28,
-            "date": "2026-10-4"
-        },
-        "mouse": {
-            "price": 20,
-            "date": "2026-10-4"
-        }
-    },
-    "user132": {
-        "sketchbook": {
-            "price": 17,
-            "date": "2026-10-14"
-        },
-        "paintbrush": {
+        "charging_cable": {
             "price": 9,
-            "date": "2026-10-15"
+            "date": "2026-11-20"
         },
-        "canvas": {
-            "price": 25,
-            "date": "2026-7-30"
+        "screen_protector": {
+            "price": 7,
+            "date": "2026-11-03"
+        }
+    },
+    "customer204": {
+        "desk_organizer": {
+            "price": 19,
+            "date": "2026-11-11"
+        }
+    },
+    "customer208": {
+        "bluetooth_speaker": {
+            "price": 57,
+            "date": "2026-07-19"
+        },
+        "tablet_cover": {
+            "price": 22,
+            "date": "2026-11-07"
+        }
+    },
+    "customer202": {
+        "external_ssd": {
+            "price": 89,
+            "date": "2026-11-16"
+        }
+    },
+    "customer206": {
+        "webcam": {
+            "price": 46,
+            "date": "2026-10-19"
+        },
+        "microphone": {
+            "price": 64,
+            "date": "2026-11-14"
+        }
+    },
+    "customer205": {
+        "monitor_light_bar": {
+            "price": 42,
+            "date": "2026-11-01"
+        },
+        "desk_mat": {
+            "price": 18,
+            "date": "2026-11-21"
+        },
+        "cable_organizer": {
+            "price": 11,
+            "date": "2026-08-27"
         }
     }
 }
 
-#print(users_data["user123"])
+# print(users_data["customer201"])
