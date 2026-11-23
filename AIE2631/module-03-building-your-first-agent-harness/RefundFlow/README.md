@@ -607,7 +607,7 @@ users_data                 dict[str, dict]
 
 # 9. Design contracts using Pydantic
 
-## 9.1 `agent/objects.py`
+## 9.1 `agent/schemas.py`
 
 **Corrected, internally consistent names:**
 
@@ -629,13 +629,13 @@ class RefundResponse(BaseModel):
     )
 
 
-class PurchaseItem(BaseModel):
+class PurchasedItem(BaseModel):
     name: str = Field(
         description="The name of an item purchased by the customer."
     )
 ```
 
-> **Preservation note:** Your source called the item model `PurchasedItem` in one file and imported `PurchaseItem` in another; your agent imported `Answer` while the response class was `RefundResponse`. This guide selects the names used by the majority of your tool/agent intent and aligns them. You may choose the other naming convention, but **all imports must match actual class definitions**.
+
 
 ## 9.2 Explain the Pydantic lines
 
@@ -1121,127 +1121,10 @@ flowchart LR
 
 ---
 
-# 14. Patch notes — minimal corrections
 
-This section distinguishes **actual defects** from **optional improvements**. It is intentionally explicit so trainees see that source examples may be conceptually correct while failing at import time or execution time.
+# 14. Test, debug and troubleshoot
 
-## Patch 01 — unify the Pydantic names (required)
-
-```diff
---- a/agent/objects.py
-+++ b/agent/objects.py
-@@
--class RefundResponse(BaseModel):
-+class RefundResponse(BaseModel):
-@@
--class PurchasedItem(BaseModel):
-+class PurchaseItem(BaseModel):
-```
-
-```diff
---- a/agent/agents.py
-+++ b/agent/agents.py
-@@
--from objects import Answer
-+from objects import RefundResponse
-@@
--    response_format=Answer,
-+    response_format=RefundResponse,
-```
-
-Alternative: keep `Answer`/`PurchasedItem` as your class names and update **every** corresponding import. Consistency, rather than a particular label, is what Python requires.
-
-## Patch 02 — use explicit Responses mode with GPT-6 Luna (recommended)
-
-```diff
---- a/agent/models.py
-+++ b/agent/models.py
-@@
-+import os
- from dotenv import load_dotenv
- from langchain.chat_models import init_chat_model
-@@
--model = init_chat_model(model="gpt-6-luna")
-+model = init_chat_model(
-+    model=os.getenv("OPENAI_MODEL", "gpt-6-luna"),
-+    model_provider="openai",
-+    use_responses_api=True,
-+)
-```
-
-**Reason:** GPT-6 Luna's Chat Completions tool-calling constraints differ from Responses. Official OpenAI guidance recommends Responses for tool-using applications. If using a different model, review that model's documented support and parameters.
-
-## Patch 03 — align function return annotation (required for honest typing)
-
-```diff
---- a/agent/tools.py
-+++ b/agent/tools.py
-@@
- def calculate_right_refund(user: str, items: list[PurchaseItem]) -> str:
-@@
--    return {"status": "there was no username found"}
-+    return "there was no username found"
-```
-
-The original return annotation was `str` while one branch returned a `dict`. Returning a consistent type improves downstream handling. The core calculation remains the same.
-
-## Patch 04 — send messages in a list and actually start the CLI
-
-```diff
---- a/agent/agents.py
-+++ b/agent/agents.py
-@@
--        response = agent.invoke({"messages": question}, config=config)
-+        response = agent.invoke({"messages": [question]}, config=config)
-@@
--#run_conversation()
-+if __name__ == "__main__":
-+    run_conversation()
-```
-
-The wrapper list follows LangChain's documented message-list convention. The entrypoint is necessary because a commented-out `run_conversation()` means executing the file builds the agent but **does not start the chat**.
-
-## Patch 05 — don't misrepresent ticket issuance (safety/accuracy)
-
-```diff
---- a/agent/tools.py
-+++ b/agent/tools.py
-@@
--    return f"a refund ticket has been issued successfully with the amount of {refund_amount}"
-+    return f"a DEMO refund ticket has been simulated for an amount of {refund_amount}"
-```
-
-Still not secure for a real backend. This patch only makes the terminal response truthful about what the code does.
-
-## Patch 06 — improve the workflow before production (advanced, not applied)
-
-**The original function is intentionally retained for classroom comparability.** A real `calculate_right_refund` must distinguish `unknown_user`, `item_not_owned`, `already_refunded`, `outside_policy`, `currency_mismatch`, `duplicate_item`, and `eligible_amount`, with structured results and deterministic validation. `issue_refund_ticket` must require a validated refund quote and verified customer identity. Real ticket creation should be **idempotent**: retrying the same request must not create duplicate tickets.
-
-Example **design contract** (conceptual, not connected to this demo):
-
-```python
-from pydantic import BaseModel, Field
-
-class RefundQuote(BaseModel):
-    username: str
-    item_ids: list[str]
-    currency: str
-    amount_minor_units: int = Field(ge=0)
-    eligible: bool
-    reason_codes: list[str]
-    quote_id: str
-
-# A server-side service would validate purchase ownership,
-# identity, policy, quoted amount, and quote expiry before issuing.
-```
-
-Use **integer minor currency units** or an appropriate `Decimal` strategy for financial values, rather than binary float calculations. This contract does not itself prove eligibility or permission.
-
----
-
-# 15. Test, debug and troubleshoot
-
-## 15.1 Three levels of verification
+## 14.1 Three levels of verification
 
 | Level | Command | Checks | API cost? |
 |---|---|---|:--:|
@@ -1292,7 +1175,7 @@ uv run pytest agent/test_tools.py -q
 
 `pytest` may import test modules differently depending on configuration and package layout. If your project has been refactored into a package with relative imports, update the test imports accordingly. These tests exercise only deterministic local fixtures, so they should not contact OpenAI.
 
-## 15.2 Frequent problems and fixes
+## 14.2 Frequent problems and fixes
 
 | Symptom | Likely cause | Action |
 |---|---|---|
@@ -1314,7 +1197,7 @@ uv run pytest agent/test_tools.py -q
 | `user` lookup fails | `data.py` layout differs from `users_data` keys | Inspect dictionary nesting and exact names |
 | Unexpected tool call or total | Model choice or demo tool behavior | Examine logs, test tools alone, add deterministic guards |
 
-## 15.3 Logging — what to log and what to avoid
+## 14.3 Logging — what to log and what to avoid
 
 ```python
 import logging
@@ -1332,9 +1215,9 @@ logging.info("Refund calculation tool invoked")
 
 ---
 
-# 16. Security, evaluation and production readiness
+# 15. Security, evaluation and production readiness
 
-## 16.1 Security review — educational vs production
+## 15.1 Security review — educational vs production
 
 | Area | In this exercise | Required before real-world use |
 |---|---|---|
@@ -1364,7 +1247,7 @@ A **language model cannot be the sole authority** for financial eligibility. Ide
 - **API outage/timeout:** Should fail with a safe, clear response without promising issuance.
 - **Clock/time zone drift:** Eligibility must not depend on an unspecified server-local time zone.
 
-## 16.3 Evaluation scorecard
+## 15.3 Evaluation scorecard
 
 Use a small set of labeled test conversations to evaluate behavior, not just whether one attractive demo works.
 
@@ -1384,62 +1267,9 @@ For each API test, usage generally depends on input tokens, output tokens, model
 
 ---
 
-# 17. Exercises, checklists and glossary
+# 1. Exercises, checklists and glossary
 
-## 17.1 Guided workshop challenges
-
-**Foundation:** Run the environment checks; bootstrap the project with `uv`; explain `.venv` vs the project folder. Show which files should go into Git and why.
-
-**Schemas:** Add an `item_count: int = Field(ge=1)` to `PurchaseItem` and explain why the original sum currently ignores quantities. Do not change live refund operations until the data model and tests agree.
-
-**Tools:** Write a new read-only `list_refundable_items(user: str)` demo tool that returns item names without exposing every field. Add it to `tools=[...]`, then demonstrate model/tool routing.
-
-**State:** Run two customer conversations with different `thread_id` values. Verify they do **not** share each other's checkpointed messages. Then reuse the same ID and show continuation within one running process.
-
-**Reliability:** Test nonexistent users, nonexistent items, duplicate items, empty requests, 429 responses, and the `conversation` flag. Write an evaluation table of expected vs observed behavior.
-
-**Advanced architecture:** Replace the simulated ticket string with a **dry-run** `RefundQuote` proposal that requires a separate human confirmation step; no actual payment integrations are needed.
-
-## 17.2 Knowledge-check questions
-
-1. What does `uv` manage that `pip` alone does not manage as a complete workflow?
-2. How do `.venv`, `pyproject.toml`, and `uv.lock` differ?
-3. What is the distinction between `load_dotenv()` and authorization?
-4. What does `init_chat_model` initialize, and what does `create_agent` add?
-5. Why does Pydantic validation not prove a refund is eligible?
-6. Which information from a Python tool becomes visible to a model?
-7. How is a LangChain `@tool` different from a remote MCP server tool?
-8. Why is `thread_id` required for checkpointed conversation continuity?
-9. Why is `uuid4()` not customer authentication?
-10. Which real-world risks remain even if the demonstration completes without errors?
-
-## 17.3 Glossary
-
-| Term | Meaning in this workshop |
-|---|---|
-| **Agent** | Model-driven executor that can decide to call registered operations |
-| **Agent harness** | Instructions + tools + state + runtime + safety constraints around the model |
-| **Agent loop** | Repeated model, optional tool, and observation steps |
-| **Tool calling** | Model emits a structured operation request; host executes it |
-| **MCP** | Standardized client/server integration protocol for AI capabilities |
-| **LLM** | Large language model used to generate content/decisions |
-| **Prompt** | Text/instructions shaping model behavior |
-| **System prompt** | Higher-priority agent instruction context; not a security boundary |
-| **Schema** | Explicit structure of expected inputs or outputs |
-| **Pydantic** | Python typing/validation library for data contracts |
-| **Structured output** | Model output returned in a machine-readable defined format |
-| **Checkpoint** | Saved state of a graph/agent execution |
-| **Thread ID** | Identifier linking separate invocations to one logical conversation |
-| **UUID v4** | Randomly generated unique identifier |
-| **Observability** | Logs/traces/metrics used to understand a runtime |
-| **Idempotency** | Repeated equivalent action does not create duplicate side effects |
-| **Dependency lockfile** | Resolved dependency versions used to recreate installation |
-| **Direct dependency** | Package your own code uses/imports directly |
-| **Transitive dependency** | Package installed because another package needs it |
-| **Token** | Unit of model input/output processing, relevant to cost/limits |
-| **Responses API** | OpenAI API used for model interactions including tool workflows |
-
-## 17.4 Final hands-on checklist
+## 16.1 Final hands-on checklist
 
 ```text
 [ ] Open VS Code and terminal
@@ -1468,7 +1298,7 @@ For each API test, usage generally depends on input tokens, output tokens, model
 
 ---
 
-# 18. Documentation and references
+# 17. Documentation and references
 
 This guide reflects publicly documented APIs checked on **23 November 2026**. Package interfaces evolve; if your installed version behaves differently, check the relevant version-specific reference rather than assuming a code sample from another release is identical.
 
