@@ -1,17 +1,16 @@
-
 from langchain.tools import tool
 from data import users_data
 from dotenv import load_dotenv
 import logging
-from objects import PurchaseItem
+from schemas import PurchasedItem
 from datetime import date
 
 load_dotenv()
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s | %(levelname)s | %(message)s "
+    level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s "
 )
+
 
 @tool
 def get_user_purchase_history(user: str) -> dict:
@@ -22,15 +21,15 @@ def get_user_purchase_history(user: str) -> dict:
         return users_data[user]
     return {"status": "there was no username found"}
 
+
 @tool
-def calculate_right_refund(user:str, items:list[PurchaseItem])-> str:
+def calculate_right_refund(user: str, items: list[PurchasedItem]) -> str:
     """Calculate the total refund amount for the specified purchased items.
     Requires a valid username and a list of items requested for refund."""
 
     logging.info(f"using calculate_right_refund tool to get user's: {user} refund")
 
     if users_data.get(user):
-
         total_refund = 0
 
         for item in items:
@@ -41,13 +40,15 @@ def calculate_right_refund(user:str, items:list[PurchaseItem])-> str:
 
     return {"status": "there was no username found"}
 
+
 @tool
-def issue_refund_ticket(user:str, refund_amount: int) -> str:
+def issue_refund_ticket(user: str, refund_amount: int) -> str:
     """Create and submit a refund ticket for the specified customer and amount.
     Use only after verifying the customer's eligibility and refund value."""
 
     logging.info(f"using issue_refund_ticket for user: {user}")
     return f"a refund ticket has been issued successfully with the amount of {refund_amount}"
+
 
 @tool
 def get_today_date() -> str:
@@ -56,6 +57,7 @@ def get_today_date() -> str:
     that the customer exists and has a purchased item eligible for review."""
     logging.info(f"using the date tool")
     return date.today().isoformat()
+
 
 # Example: Retrieve a customer's purchase history
 # print(get_user_purchase_history.invoke("customer201"))
