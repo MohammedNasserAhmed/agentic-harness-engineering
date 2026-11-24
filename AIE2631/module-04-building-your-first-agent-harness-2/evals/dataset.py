@@ -1,79 +1,125 @@
-import sys
-from pathlib import Path
-from uuid import uuid4
+from deepeval.dataset import EvaluationDataset, Golden
+from deepeval.test_case import ToolCall
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "agent"))
-
-from agent import agent
-from dataset import dataset
-from model import eval_model
-
-from deepeval.metrics import TaskCompletionMetric
-from deepeval.integrations.langchain import CallbackHandler
-
-
-SUCCESSFUL_TASK_DEFINITION = """
-The agent succeeds when its actions, decisions, tool usage,
-and final response satisfy the following criteria:
-
-1. CUSTOMER IDENTIFICATION
-- If the username is missing, request it without issuing a refund.
-- If the username cannot be validated through purchase records,
-  request a valid username without issuing a refund or disclosing
-  purchase history.
-
-2. REFUND ELIGIBILITY
-- Retrieve and verify the customer's purchase history.
-- Ensure each requested purchase is within 30 days, inclusive,
-  and its purchase date is not in the future.
-- Refund only explicitly requested and previously purchased items.
-- Refund all items only when explicitly requested.
-- Calculate the exact eligible amount using verified purchase records.
-- Do not communicate internal checks unless explaining rejection.
-
-3. CLARIFICATION
-- If essential information is missing or ambiguous, request
-  clarification without making assumptions or issuing a refund.
-- Requesting necessary clarification counts as task success.
-
-4. REFUND EXECUTION
-- Issue a refund ticket only after all applicable eligibility
-  checks pass, using the correct amount and authorized items.
-- Claim successful issuance only when confirmed by the refund tool.
-- Never issue refunds for ineligible requests.
-
-5. FINAL RESPONSE
-- Approved: Confirm successful ticket issuance, specifying the
-  refund amount and refunded item names.
-- Rejected: Confirm that no ticket was issued and explain why.
-
-6. NON-REFUND REQUESTS
-- Answer informational, policy-related, or other non-refund
-  requests appropriately without issuing refund tickets.
-
-7. DATA INTEGRITY
-- Never fabricate customer information, purchase records,
-  purchase dates, refund amounts, or tool execution results.
-- Unauthorized refunds, incorrect amounts, refunds for unpurchased
-  items, or false execution claims constitute task failure.
-"""
-
-
-metrics = [
-    TaskCompletionMetric(
-        threshold=0.8,
-        model=eval_model,
-        task=SUCCESSFUL_TASK_DEFINITION,
-        include_reason=True,
-    )
-]
-
-
-for golden in dataset.evals_iterator(metrics=metrics):
-    response = agent.invoke(
-        {"messages": [{"role": "user", "content": golden.input}]},
-        config={
-            "configurable": {"thread_id": str(uuid4())},
-            "callbacks": [CallbackHandler()],
-        },
-    )
+dataset = EvaluationDataset(
+    goldens=[
+        Golden(
+            input="I am customer201, I would like a refund for the laptop_stand and usb_hub",
+            expected_output="A refund ticket for $32 has been issued successfully",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer201"},
+                ),
+                ToolCall(name="get_today_date", input_parameters={}),
+                ToolCall(
+                    name="calculate_right_refund",
+                    input_parameters={
+                        "user": "customer201",
+                        "items": [{"name": "laptop_stand"}, {"name": "usb_hub"}],
+                    },
+                ),
+                ToolCall(
+                    name="issue_refund_ticket",
+                    input_parameters={"user": "customer201", "refund_amount": 32},
+                ),
+            ],
+        ),
+        Golden(
+            input="I am customer201, I would like a refund for the laptop_stand",
+            expected_output="A refund ticket for $20 has been issued successfully",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer201"},
+                ),
+                ToolCall(name="get_today_date", input_parameters={}),
+                ToolCall(
+                    name="calculate_right_refund",
+                    input_parameters={
+                        "user": "customer201",
+                        "items": [{"name": "laptop_stand"}],
+                    },
+                ),
+                ToolCall(
+                    name="issue_refund_ticket",
+                    input_parameters={"user": "customer201", "refund_amount": 20},
+                ),
+            ],
+        ),
+        Golden(
+            input="I am customer201, I do not want a refund. I just want to know what I purchased",
+            expected_output="No refund tickets were issued. Only the customer's purchased items were listed",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer201"},
+                ),
+            ],
+        ),
+        Golden(
+            input="I am customer999, I would like a refund for the usb_hub",
+            expected_output="Inform the customer that the username is invalid and request a valid username",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer999"},
+                ),
+            ],
+        ),
+        Golden(
+            input="I am customer305, I would like a refund for the wireless_mouse",
+            expected_output="A refund ticket for $18 has been issued successfully",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer305"},
+                ),
+                ToolCall(name="get_today_date", input_parameters={}),
+                ToolCall(
+                    name="calculate_right_refund",
+                    input_parameters={
+                        "user": "customer305",
+                        "items": [{"name": "wireless_mouse"}],
+                    },
+                ),
+                ToolCall(
+                    name="issue_refund_ticket",
+                    input_parameters={"user": "customer305", "refund_amount": 18},
+                ),
+            ],
+        ),
+        Golden(
+            input="I am customer201, I would like a refund for the usb_hub",
+            expected_output="A refund ticket for $12 has been issued successfully only for the usb_hub",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer201"},
+                ),
+                ToolCall(name="get_today_date", input_parameters={}),
+                ToolCall(
+                    name="calculate_right_refund",
+                    input_parameters={
+                        "user": "customer201",
+                        "items": [{"name": "usb_hub"}],
+                    },
+                ),
+                ToolCall(
+                    name="issue_refund_ticket",
+                    input_parameters={"user": "customer201", "refund_amount": 12},
+                ),
+            ],
+        ),
+        Golden(
+            input="I am customer201, I would like a refund for the wireless_mouse",
+            expected_output="No refund was issued because the customer did not purchase this item",
+            expected_tools=[
+                ToolCall(
+                    name="get_user_purchase_history",
+                    input_parameters={"user": "customer201"},
+                ),
+            ],
+        ),
+    ]
+)
