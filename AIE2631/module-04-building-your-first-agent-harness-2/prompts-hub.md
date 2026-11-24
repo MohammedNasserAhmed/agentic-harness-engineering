@@ -1,0 +1,2 @@
+# Create_demo_app  
+"Build a polished local Streamlit UI for this refund-agent tutorial. Reuse the existing LangChain agent, `gpt-6-luna`, and real purchase data in `agent/`. Create a warm Anthropic-inspired support chat: paper background, serif “REFUND SYSTEM” hero, 3D support robot, dark rounded message composer with light text, session memory, friendly tool-progress sidebar, and a New refund request reset button. Lock input after the agent returns a final decision. Keep all text high-contrast and preserve the existing agent logic."
