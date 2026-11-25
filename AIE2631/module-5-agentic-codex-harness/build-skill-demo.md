@@ -73,11 +73,3 @@ Here's what happened behind the scenes:
 
 This process uses **progressive disclosure** to let the agent access many skills without loading all their instructions up front.
 
-## Next steps
-
-You've created a working Agent Skill. From here:
-
-* **[Best practices](https://agentskills.io/skill-creation/best-practices.md)** — How to write skills that are well-scoped and effective.
-* **[Optimizing skill descriptions](https://agentskills.io/skill-creation/optimizing-descriptions.md)** — Test and improve your skill's description so it activates on the right prompts.
-* **[Specification](https://agentskills.io/specification.md)** — The complete format reference for `SKILL.md` files.
-* **[Example skills](https://github.com/anthropics/skills)** — Browse real-world skills on GitHub.
