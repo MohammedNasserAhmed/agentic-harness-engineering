@@ -8,9 +8,9 @@ from agent import agent
 from dataset import dataset
 from model import eval_model
 
-from deepeval.metrics import ArgumentCorrectnessMetric
+from deepeval.metrics import GEval
 from deepeval.integrations.langchain import CallbackHandler
-from deepeval.test_case import LLMTestCase, ToolCall
+from deepeval.test_case import LLMTestCase, ToolCall, SingleTurnParams
 from deepeval import evaluate
 from dotenv import load_dotenv
 
@@ -37,13 +37,28 @@ for golden in dataset.goldens:
             )
 
     test_case = LLMTestCase(
-        input=golden.input, actual_output=actual_output, tools_called=tools_called
+        input=golden.input,
+        actual_output=actual_output,
+        expected_output=golden.expected_output,
     )
 
     dataset.add_test_case(test_case)
 
 metrics = [
-    ArgumentCorrectnessMetric(threshold=0.8, model=eval_model, include_reason=True)
+    GEval(
+        name="Answer Correctness",
+        evaluation_params=[
+            SingleTurnParams.INPUT,
+            SingleTurnParams.ACTUAL_OUTPUT,
+            SingleTurnParams.EXPECTED_OUTPUT,
+        ],
+        evaluation_steps=[
+            "make sure that the actual output and the expected output have the same logical conclusion"
+        ],
+        threshold=0.8,
+        model=eval_model,
+        verbose_mode=True,
+    )
 ]
 
 evaluate(test_cases=dataset.test_cases, metrics=metrics)
