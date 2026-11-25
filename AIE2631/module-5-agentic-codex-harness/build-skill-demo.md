@@ -1,75 +1,211 @@
-> ## Documentation Index
-> Fetch the complete documentation index at: https://agentskills.io/llms.txt
-> Use this file to discover all available pages before exploring further.
 
-# Quickstart
+## التطبيق العملي — إنشاء أول Agent Skill
 
-> Create your first Agent Skill and see it work in VS Code.
+سنقوم بإنشاء مهارة بسيطة تسمى `coin-flip`، تتيح للوكيل
+محاكاة رمي قطعة نقدية باستخدام Python وإرجاع نتيجة عشوائية.
 
-In this tutorial, you'll create a skill that gives an agent the capability to roll dice using a random number generator.
+### 1. إنشاء بنية المشروع
 
-## Prerequisites
+افتح مشروعك في VS Code، ثم أنشئ البنية التالية:
 
-* [VS Code](https://code.visualstudio.com/) with [GitHub Copilot](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot)
-
-> [!NOTE]
->
-> This tutorial uses VS Code, but Agent Skills are an open format. The same skill works in any compatible agent, including Claude Code and OpenAI Codex.
-
-## Create the skill
-
-A skill is a folder containing a `SKILL.md` file. VS Code looks for skills in `.agents/skills/` by default. Create `.agents/skills/roll-dice/SKILL.md` in your project:
-
-````markdown .agents/skills/roll-dice/SKILL.md theme={null}
----
-name: roll-dice
-description: Roll dice using a random number generator. Use when asked to roll a die (d6, d20, etc.), roll dice, or generate a random dice roll.
----
-
-To roll a die, use the following command that generates a random number from 1
-to the given number of sides:
-
-```bash
-echo $((RANDOM % <sides> + 1))
+```text
+my-project/
+├── .agents/
+│   └── skills/
+│       └── coin-flip/
+│           ├── SKILL.md
+│           └── scripts/
+│               └── flip.py
+└── README.md
 ```
+
+يُستخدم المسار `.agents/skills/` لتعريف المهارات الخاصة
+بالمشروع في Codex.
+
+### 2. إنشاء المجلدات والملفات
+
+افتح Terminal داخل VS Code ونفّذ الأوامر التالية
+باستخدام PowerShell:
 
 ```powershell
-Get-Random -Minimum 1 -Maximum (<sides> + 1)
+mkdir -Force .agents/skills/coin-flip/scripts
+
+New-Item .agents/skills/coin-flip/SKILL.md
+
+New-Item .agents/skills/coin-flip/scripts/flip.py
 ```
 
-Replace `<sides>` with the number of sides on the die (e.g., 6 for a standard
-die, 20 for a d20).
-````
+### 3. كتابة ملف SKILL.md
 
-That's it — one file, under 20 lines. Here's what each part does:
+يمثل هذا الملف نقطة الدخول الأساسية للمهارة، ويحدد هويتها
+ومتى يستخدمها الوكيل وكيفية تنفيذها.
 
-* **`name`** — A short identifier for the skill. Must match the folder name.
-* **`description`** — Tells the agent when to use this skill. This is how the agent decides whether to activate it.
-* **The body** — Instructions the agent follows when the skill activates. Here, the agent is instructed to generate a random number using a terminal command, substituting the number of sides from the user's request.
+File: `.agents/skills/coin-flip/SKILL.md`
 
-## Try it out
+```markdown
+---
+name: coin-flip
+description: Flip a virtual coin and return a random result.
+  Use when the user asks to flip or toss a coin.
+---
 
-1. Open your project in VS Code.
-2. Open the Copilot Chat panel.
-3. Select **Agent** mode from the mode dropdown at the bottom of the chat panel.
-4. Type `/skills` to confirm that `roll-dice` appears in the list. If it doesn't, check that the file is at `.agents/skills/roll-dice/SKILL.md` relative to your project root.
-5. Ask: **"Roll a d20"**
+# Coin Flip
 
-The agent should activate the `roll-dice` skill. It may ask for permission to run a terminal command — allow it. It will run the command and return a random number between 1 and 20.
+## Instructions
 
-> [!NOTE]
->
-> Tool-use reliability varies across models — some follow skill instructions and run commands consistently, while others may attempt to answer on their own. If the agent responds without running a terminal command, try selecting a different model from the model dropdown.
+1. Execute the Python script `scripts/flip.py`.
+2. Read the result from the terminal.
+3. Return the result to the user.
 
-## How it works
+## Rules
 
-Here's what happened behind the scenes:
+- Always execute the script.
+- Never invent a result.
+- Do not modify the script.
+- Do not repeat the flip unless requested.
+```
 
-1. **Discovery** — When the chat session started, the agent scanned default skill directories and found your skill. It read only the `name` and `description`, just enough to know when the skill might be relevant.
+### 4. كتابة الكود التنفيذي
 
-2. **Activation** — When you asked about rolling dice, the agent matched your question to the skill's description and loaded the full `SKILL.md` body into context.
+File: `.agents/skills/coin-flip/scripts/flip.py`
 
-3. **Execution** — The agent followed the instructions in the body, adapting the terminal command to the number of sides in your request.
+```python
+import random
 
-This process uses **progressive disclosure** to let the agent access many skills without loading all their instructions up front.
+result = random.choice(["Heads", "Tails"])
 
+print(result)
+```
+
+تُستخدم مكتبة `random` المدمجة في Python لتوليد
+نتيجة عشوائية، ولا تحتاج إلى تثبيت أي مكتبات إضافية.
+
+### 5. اختبار الكود مباشرة
+
+نفّذ الأمر التالي من المجلد الرئيسي للمشروع:
+
+```powershell
+python .agents/skills/coin-flip/scripts/flip.py
+```
+
+Expected output:
+
+```text
+Heads
+```
+
+أو:
+
+```text
+Tails
+```
+
+### 6. استخدام المهارة داخل Codex
+
+افتح إضافة Codex داخل VS Code، وابدأ جلسة جديدة
+ضمن المشروع الحالي.
+
+يمكن استدعاء المهارة بطريقتين:
+
+#### Explicit Invocation
+
+استدعاء المهارة مباشرة باستخدام اسمها:
+
+```text
+$coin-flip
+```
+
+أو:
+
+```text
+Use $coin-flip to flip a coin.
+```
+
+#### Implicit Invocation
+
+إرسال طلب طبيعي دون تحديد اسم المهارة:
+
+```text
+Flip a coin for me.
+```
+
+في هذه الحالة، يستطيع الوكيل اكتشاف المهارة المناسبة
+بناءً على حقل `description`، ثم تفعيلها وتنفيذ تعليماتها.
+
+### 7. النتيجة المتوقعة
+
+```text
+User:
+Flip a coin for me.
+
+Agent:
+Running the coin-flip skill...
+
+Result:
+Heads
+```
+
+### 8. كيف نفّذ الوكيل المهارة؟
+
+```mermaid
+flowchart TD
+    A[User Request] --> B[Discover Skills]
+    B --> C[Match Skill Description]
+    C --> D[Activate coin-flip]
+    D --> E[Read SKILL.md]
+    E --> F[Execute flip.py]
+    F --> G[Read Terminal Output]
+    G --> H[Return Result]
+```
+
+| المرحلة | الإجراء |
+|---|---|
+| Discovery | اكتشاف اسم المهارة ووصفها. |
+| Activation | قراءة التعليمات الموجودة في SKILL.md. |
+| Execution | تنفيذ ملف flip.py. |
+| Observation | قراءة النتيجة الفعلية من Terminal. |
+| Response | تقديم النتيجة للمستخدم. |
+
+### 9. تجربة إضافية
+
+جرّب إرسال الطلبات التالية إلى الوكيل:
+
+```text
+Flip a coin.
+```
+
+```text
+Flip a coin three times.
+```
+
+```text
+Toss a coin to help me make a decision.
+```
+
+```text
+Use the coin-flip skill without modifying any files.
+```
+
+راقب كيفية اكتشاف المهارة، وتفعيلها، واستخدام
+الأدوات التنفيذية، وإرجاع النتائج.
+
+### 10. المفاهيم المستفادة
+
+- Agent Skills
+- SKILL.md
+- YAML Front Matter
+- Skill Discovery
+- Skill Activation
+- Progressive Disclosure
+- Explicit Invocation
+- Implicit Invocation
+- Script Execution
+- Context Engineering
+
+---
+
+## المراجع
+
+- [Agent Skills](https://agentskills.io/)
+- [Agent Skills Specification](https://agentskills.io/specification.md)
+- [OpenAI Developers](https://developers.openai.com/)
