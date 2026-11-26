@@ -22,7 +22,7 @@
 
 
 AGENTS.md [5]
-## Database Security Rules
+Database Security Rules
 
 - Access only the authorized Supabase project.
 - Request approval before modifying the database schema.
@@ -33,3 +33,5 @@ AGENTS.md [5]
 - Never disable Row-Level Security (RLS).
 - Validate database changes after execution.
 - Report all database modifications.
+
+[6] استخدم Supabase MCP لفحص قاعدة بيانات المشروع وتحليل الجداول والعلاقات الحالية. عند الحاجة إلى إنشاء جدول أو إدراج بيانات أو تعديلها أو حذفها، أنشئ ملف SQL Migration مستقلًا، واشرح التغييرات وتأثيرها ومخاطرها وآلية التراجع عنها، دون تنفيذها مباشرة. سأراجع الملف وأنفّذه يدويًا عبر Supabase SQL Editor بعد الموافقة.
