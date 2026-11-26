@@ -19,3 +19,17 @@
 [3] اربط مشروع ShihrBoard بقاعدة بيانات Supabase باستخدام SDK الرسمي المتوافق مع التقنيات الحالية للمشروع. استبدل البيانات الوهمية Mock Data بالبيانات الفعلية، واضبط Environment Variables، وأنشئ طبقة Data Access منظمة وقابلة لإعادة الاستخدام. اربط المؤشرات المالية والجداول والرسوم البيانية بالبيانات الفعلية، مع معالجة حالات Loading وError وEmpty State، والحفاظ الكامل على التصميم والهوية البصرية الحالية.
 
 [4] نفّذ End-to-End Validation لتكامل مشروع ShihrBoard مع Supabase. تحقّق من الاتصال والجداول والعلاقات وصحة البيانات وعمليات CRUD ودقة المؤشرات المالية وسياسات RLS وصلاحيات المستخدمين، وافحص Security Advisors وPerformance Advisors والسجلات Logs. اختبر التطبيق فعليًا، وعالج الأخطاء دون تعطيل ضوابط الأمان، ثم قدّم تقريرًا مختصرًا بالاختبارات ونتائجها والمشكلات المتبقية.
+
+
+AGENTS.md [5]
+## Database Security Rules
+
+- Access only the authorized Supabase project.
+- Request approval before modifying the database schema.
+- Never delete or truncate tables without explicit approval.
+- Use SQL migrations for schema changes.
+- Use synthetic data during development.
+- Never expose secret keys or credentials.
+- Never disable Row-Level Security (RLS).
+- Validate database changes after execution.
+- Report all database modifications.
